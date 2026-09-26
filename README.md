@@ -33,6 +33,7 @@ python3 -m http.server 8000
 - **🧸 Gustave lost 8 toys** around the park.
 - **🏅 Badges** reward combos (full spa circuit, three meals on Saturday, all-rounder…). The 📖 notebook lists them all, along with what's on and when.
 - **⏩** fast-forwards time (F key). `+`/`−` zoom.
+- **🇬🇧 / 🇫🇷** The game is in English and French. It follows your device language, and you can switch in **⚙️ Settings** or on the title screen.
 
 At check-out you get a rank, from *Stressed Parisian* up to *Châtelain·e*.
 
@@ -49,10 +50,12 @@ At check-out you get a rank, from *Stressed Parisian* up to *Châtelain·e*.
   precaches the game so it plays offline. Bump `VERSION` in `sw.js` when you release.
 - A day/night cycle multiplies a tint over the scene. At night the windows light up
   from a glow mask that is generated along with each building.
+- `js/i18n.js` holds the UI strings and French overlays for all the content. They're applied
+  in place when you switch language, so adding a language only means adding a dictionary.
 - `js/data.js` holds every place, opening hour, activity, badge and rank. Tweak the
   balance there.
 
-Test hooks: `?autostart&t=<minutes since Friday 00:00>&x=<tile>&y=<tile>&zoom=<n>`,
+Test hooks: `?lang=fr&autostart&t=<minutes since Friday 00:00>&x=<tile>&y=<tile>&zoom=<n>`,
 plus `&overview` to allow zooming all the way out.
 `test/sim.html` runs a scripted playthrough.
 

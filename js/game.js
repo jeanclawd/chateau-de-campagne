@@ -2,6 +2,7 @@ import { Pix, rgb, iso, hash, mulberry, TW, TH } from './pix.js';
 import { W, H, map, block, walkable, buildGround, buildObjects, fireFrames, duckSprite,
   ORIGIN_X, ORIGIN_Y, GROUND_W, GROUND_H, buildings } from './world.js';
 import { places, toys, badges, ranks, DAY, START, END, DAYS } from './data.js';
+import { t as tr, setLang, lang, LANGS } from './i18n.js';
 
 // ================================================================ setup
 const view = document.getElementById('game');
@@ -93,25 +94,25 @@ const ducks = [0, 1, 2, 3].map(i => { const [x, y] = pondTiles[(i * 7) % pondTil
 // ================================================================ time helpers
 const day = t => Math.floor(t / DAY);
 const clock = t => { const m = Math.floor(t % DAY); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
-const fmtWhen = t => `${DAYS[day(t)] || 'Monday'} ${clock(t)}`;
+const fmtWhen = t => `${DAYS[day(t)] || ''} ${clock(t)}`;
 
 function openNow(act, t = S.t) { return act.when.some(w => t >= w.from && t < w.to); }
 function nextOpen(act, t = S.t) { return act.when.filter(w => w.from > t).sort((a, b) => a.from - b.from)[0]; }
 function timesToday(id) { return S.done.filter(e => e.id === id && e.day === day(S.t)).length; }
 
 function canDo(act) {
-  if (S.over) return 'The weekend is over';
+  if (S.over) return tr('over');
   if (!openNow(act)) {
     const n = nextOpen(act);
-    return n ? `Opens ${day(n.from) === day(S.t) ? '' : DAYS[day(n.from)] + ' '}${clock(n.from)}` : 'Not this weekend';
+    return n ? tr('opens', { when: `${day(n.from) === day(S.t) ? '' : DAYS[day(n.from)] + ' '}${clock(n.from)}` }) : tr('notThisWeekend');
   }
-  if (act.need && !S.items.has(act.need)) return act.need === 'racket' ? 'Borrow rackets at the Remise' : act.need === 'clubs' ? 'Borrow clubs at the Remise' : 'Pick up a basket at La Table';
-  if (act.give && S.items.has(act.give)) return 'Already have it';
+  if (act.need && !S.items.has(act.need)) return tr(act.need === 'racket' ? 'needRacket' : act.need === 'clubs' ? 'needClubs' : 'needBasket');
+  if (act.give && S.items.has(act.give)) return tr('haveIt');
   if (act.special === 'toys') return null;
-  if (act.kind === 'meal' && act.s >= 20 && timesToday(act.id) > 0) return 'Already had it today';
-  if (act.daily && timesToday(act.id) > 0) return 'Done today — come back tomorrow';
-  if (act.kind === 'meal' && S.sat > 85) return 'Too full right now';
-  if (act.e < 0 && S.energy < -act.e) return 'Too tired — rest first';
+  if (act.kind === 'meal' && act.s >= 20 && timesToday(act.id) > 0) return tr('hadToday');
+  if (act.daily && timesToday(act.id) > 0) return tr('doneToday');
+  if (act.kind === 'meal' && S.sat > 85) return tr('tooFull');
+  if (act.e < 0 && S.energy < -act.e) return tr('tooTired');
   return null;
 }
 
@@ -120,13 +121,13 @@ function mult(act) {
   let m = 1;
   if (act.kind === 'meal') {
     m = 0.45 + 1.15 * (1 - S.sat / 100);
-    if (S.sat < 30) notes.push('starving → extra tasty');
+    if (S.sat < 30) notes.push(tr('starving'));
   } else {
-    if (S.sat < 20) { m *= 0.5; notes.push('hangry ×0.5'); }
-    if (S.energy < 20 && act.e < 0) { m *= 0.6; notes.push('exhausted ×0.6'); }
-    const n = timesToday(act.id); if (n > 0) { m *= Math.pow(0.5, n); notes.push(`again today ×${Math.pow(0.5, n)}`); }
+    if (S.sat < 20) { m *= 0.5; notes.push(tr('hangry')); }
+    if (S.energy < 20 && act.e < 0) { m *= 0.6; notes.push(tr('exhausted')); }
+    const n = timesToday(act.id); if (n > 0) { m *= Math.pow(0.5, n); notes.push(tr('again', { k: Math.pow(0.5, n) })); }
     const h = (S.t % DAY) / 60;
-    if (act.golden && h >= 18.5 && h < 20.5) { m *= 1.5; notes.push('golden hour ×1.5'); }
+    if (act.golden && h >= 18.5 && h < 20.5) { m *= 1.5; notes.push(tr('golden')); }
   }
   return { m, notes };
 }
@@ -148,12 +149,12 @@ function announcements(a, b) {
     const at = w.from - 20, key = act.id + w.from;
     if (a < at + 20 && b >= at && !S.announced.has(key)) {
       S.announced.add(key);
-      toast(`${pl.icon} ${act.name} — ${pl.name.split(' · ').pop()} at ${clock(w.from)}`, 'info');
+      toast(tr('announce', { icon: pl.icon, act: act.name, place: pl.name.split(' · ').pop(), time: clock(w.from) }), 'info');
     }
   }
-  if (!S.lateWarned && b >= END - 60) { S.lateWarned = true; toast('🚗 Check-out at 17:00 — head back to the parking!', 'warn'); }
+  if (!S.lateWarned && b >= END - 60) { S.lateWarned = true; toast(tr('checkoutSoon'), 'warn'); }
   const h = (b % DAY) / 60, ha = (a % DAY) / 60;
-  if (ha < 23.5 && h >= 23.5) toast('🌙 It\'s getting late. Your bed is in the château.', 'info');
+  if (ha < 23.5 && h >= 23.5) toast(tr('late'), 'info');
 }
 
 // ================================================================ doing things
@@ -164,9 +165,9 @@ function doActivity(pl, act) {
   if (why) { toast(why, 'warn'); return; }
   if (act.special === 'toys') {
     const left = toys.filter((t, i) => !S.toys.has(i));
-    showBusy({ icon: '🧸', title: 'Gustave\'s lost toys', say: left.length
-      ? `Gustave lost ${toys.length} toys around the park. You've found ${S.toys.size}. Still missing: ${left.map(t => t.icon + ' ' + t.name).join(', ')}. Look near the edges of the park!`
-      : 'Gustave is overjoyed. All his toys are home!', mins: 0, done: () => {} });
+    showBusy({ icon: '🧸', title: tr('toysTitle'), say: left.length
+      ? tr('toysLeft', { n: toys.length, found: S.toys.size, list: left.map(t => t.icon + ' ' + t.name).join(', ') })
+      : tr('toysAll'), mins: 0, done: () => {} });
     return;
   }
   if (act.kind === 'leave') { endGame(true); return; }
@@ -187,11 +188,11 @@ function doActivity(pl, act) {
       const cat = act.kind === 'meal' ? 'meals' : 'activities';
       let msg = [];
       if (pts > 0) { const got = addPoints(pts, cat); msg.push(`+${got} ✨`); }
-      if (first && act.pts > 0) { addPoints(15, 'activities'); msg.push('+15 first time!'); }
-      if (overfull) { S.energy = clamp(S.energy - 10); msg.push('food coma −10⚡'); }
+      if (first && act.pts > 0) { addPoints(15, 'activities'); msg.push(tr('firstTime')); }
+      if (overfull) { S.energy = clamp(S.energy - 10); msg.push(tr('foodComa')); }
       S.done.push({ id: act.id, day: day(S.t - act.dur), t: S.t });
       if (act.pts > 0) toast(`${pl.icon} ${act.name} ${msg.join(' · ')}${notes.length ? ' (' + notes.join(', ') + ')' : ''}`, 'pts');
-      else if (act.give) toast(`${pl.icon} Got it: ${act.name.replace(/^(Borrow|Pick up) /, '')}`, 'info');
+      else if (act.give) toast(tr('gotIt', { icon: pl.icon, item: tr('items')[act.give] }), 'info');
       checkBadges();
       renderPanel();
     },
@@ -205,13 +206,13 @@ function sleepUntil(until) {
   if (wake > END) wake = END - 60;
   const hours = (wake - S.t) / 60;
   showBusy({
-    icon: '🌙', title: 'Sweet dreams', say: `You sleep ${hours.toFixed(1)} h under the château's beams…`, mins: wake - S.t, night: true,
+    icon: '🌙', title: tr('dreams'), say: tr('sleepSay', { h: hours.toFixed(1) }), mins: wake - S.t, night: true,
     done: () => {
       passTime(wake - S.t, true);
       S.energy = clamp(S.energy + hours * 13);
       S.sleeps.push(hours);
       const pts = addPoints(Math.min(hours, 9) * 8, 'sleep');
-      toast(`☀️ Good morning! ${DAYS[day(S.t)]} ${clock(S.t)} · +${pts} ✨ for a good night`, 'pts');
+      toast(tr('morning', { day: DAYS[day(S.t)], time: clock(S.t), pts }), 'pts');
       checkBadges(); renderPanel();
     },
   });
@@ -220,8 +221,8 @@ function sleepUntil(until) {
 function collapse() {
   const lose = Math.min(S.score, 25);
   S.score -= lose; S.breakdown.activities -= lose;
-  showBusy({ icon: '😵', title: 'You nod off on a garden bench', say: 'Out of energy. Three hours later a gardener gently wakes you.', mins: 180, night: true, done: () => {
-    passTime(180, true); S.energy = clamp(S.energy + 35); toast(`😵 Collapsed from exhaustion −${lose} ✨. Mind your ⚡!`, 'warn'); renderPanel();
+  showBusy({ icon: '😵', title: tr('benchTitle'), say: tr('benchSay'), mins: 180, night: true, done: () => {
+    passTime(180, true); S.energy = clamp(S.energy + 35); toast(tr('collapsed', { n: lose }), 'warn'); renderPanel();
   } });
 }
 
@@ -392,7 +393,7 @@ function update(dt) {
   S.toys.size < toys.length && toys.forEach((t, i) => {
     if (!S.toys.has(i) && Math.hypot(S.x - (t.x + 0.5), S.y - (t.y + 0.5)) < 0.8) {
       S.toys.add(i); addPoints(20, 'toys');
-      toast(`${t.icon} Found Gustave's ${t.name}! +20 ✨ (${S.toys.size}/${toys.length})`, 'pts');
+      toast(tr('foundToy', { icon: t.icon, name: t.name, n: S.toys.size, total: toys.length }), 'pts');
       checkBadges();
     }
   });
@@ -647,7 +648,7 @@ function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcT
 
 // ================================================================ UI
 function hud() {
-  $('day').textContent = (DAYS[day(S.t)] || 'Sunday').slice(0, 3);
+  $('day').textContent = (DAYS[day(S.t)] || DAYS[2]).slice(0, 3);
   $('time').textContent = clock(S.t);
   $('score').textContent = S.score;
   $('energy').style.width = S.energy + '%';
@@ -672,8 +673,8 @@ function renderPanel() {
     const b = document.createElement('button');
     b.className = 'act' + (why ? ' off' : '');
     const eff = [];
-    if (act.dur) eff.push(`${act.dur} min`);
-    if (act.kind === 'sleep') eff.push('restores ⚡');
+    if (act.dur) eff.push(tr('min', { n: act.dur }));
+    if (act.kind === 'sleep') eff.push(tr('restores'));
     if (act.e) eff.push(`${act.e > 0 ? '+' : ''}${act.e}⚡`);
     if (act.s) eff.push(`${act.s > 0 ? '+' : ''}${act.s}🍽️`);
     let pts = '';
@@ -738,29 +739,46 @@ $('book').onclick = () => {
   const rows = places.filter(p => p.id !== 'parking').map(pl => {
     const acts = pl.acts.filter(a => a.pts > 0).map(a => {
       const n = S.done.filter(e => e.id === a.id).length;
-      const nx = openNow(a) ? '<b class="open">open now</b>' : (nextOpen(a) ? 'next ' + fmtWhen(nextOpen(a).from) : '—');
+      const nx = openNow(a) ? `<b class="open">${tr('openNow')}</b>` : (nextOpen(a) ? tr('next', { when: fmtWhen(nextOpen(a).from) }) : '—');
       return `<li class="${n ? 'did' : ''}">${n ? '✅' : '▫️'} ${a.name} <small>${nx}</small></li>`;
     }).join('');
     return acts ? `<h4>${pl.icon} ${pl.name}</h4><ul>${acts}</ul>` : '';
   }).join('');
   const bs = badges.map(b => `<li class="${S.badges.has(b.id) ? 'did' : ''}">${S.badges.has(b.id) ? '🏅' : '▫️'} ${b.name} <small>+${b.pts}</small></li>`).join('');
-  openModal(`<h2>📖 Weekend notebook</h2><p class="muted">${S.distinct()} different activities so far · ${S.toys.size}/${toys.length} of Gustave's toys</p><h3>Bonus badges</h3><ul>${bs}</ul><h3>What's on</h3>${rows}`);
+  openModal(`<h2>${tr('notebook')}</h2><p class="muted">${tr('notebookSub', { n: S.distinct(), toys: S.toys.size, total: toys.length })}</p><h3>${tr('bonusBadges')}</h3><ul>${bs}</ul><h3>${tr('whatsOn')}</h3>${rows}`);
 };
 $('help').onclick = () => openModal(helpHtml());
+$('settings').onclick = openSettings;
+
+function langButtons() {
+  return Object.entries(LANGS).map(([k, v]) => `<button class="lang${k === lang ? ' on' : ''}" data-lang="${k}">${k === 'fr' ? '🇫🇷' : '🇬🇧'} ${v}</button>`).join('');
+}
+function wireLang(root, after) {
+  root.querySelectorAll('[data-lang]').forEach(b => b.onclick = () => { applyLang(b.dataset.lang); after(); });
+}
+function applyLang(l) {
+  setLang(l);
+  renderPanel();
+  document.querySelectorAll('.langpick').forEach(el => { el.innerHTML = langButtons(); wireLang(el, () => {}); });
+}
+function openSettings() {
+  openModal(`<h2>${tr('settings')}</h2>
+    <h3>${tr('language')}</h3><div class="langrow">${langButtons()}</div>
+    <h3>${tr('zoom')}</h3><div class="langrow"><button class="lang" id="s-zout">−</button><button class="lang" id="s-zin">+</button></div>
+    <h3></h3><button class="lang danger" id="s-restart">${tr('restart')}</button>`);
+  const body = $('modal-body');
+  wireLang(body, openSettings);
+  $('s-zin').onclick = () => zoom(1);
+  $('s-zout').onclick = () => zoom(-1);
+  $('s-restart').onclick = e => {
+    if (!e.target.dataset.armed) { e.target.dataset.armed = 1; e.target.textContent = tr('restartSure'); return; }
+    restart();
+  };
+}
 
 function helpHtml() {
-  return `<h2>How to play</h2>
-  <p>You have <b>one weekend</b> at the château — Friday 18:00 to Sunday 17:00 check-out. Make the most of it.</p>
-  <ul class="plain">
-   <li>👆 <b>Tap</b> the ground to walk, tap a building or icon to go there (or use arrows / WASD).</li>
-   <li>🟡 A <b>glowing ring</b> means something is on right now. Stand on the spot to see what you can do.</li>
-   <li>✨ Every activity earns points. <b>First time</b> doing something: +15. Repeating the same thing on the same day earns less.</li>
-   <li>🍽️ <b>Meals score more when you're hungry</b>. Skip meals and you get hangry: everything scores half.</li>
-   <li>⚡ Sport burns energy; the spa, naps and coffee restore it. Sleep in your château room at night — run out and you'll collapse on a bench.</li>
-   <li>🎾 Rackets and golf clubs are free at the <b>Remise des Sports</b>. Picnic baskets come from La Table.</li>
-   <li>🧸 Gustave lost 8 toys around the park. 🏅 Bonus badges for combos — see the 📖 notebook.</li>
-   <li>⏩ Fast-forward time while you wait for something to open.</li>
-  </ul>`;
+  const [intro, ...items] = tr('help');
+  return `<h2>${tr('helpTitle')}</h2><p>${intro}</p><ul class="plain">${items.map(x => `<li>${x}</li>`).join('')}</ul>`;
 }
 
 function endGame(onTime) {
@@ -772,20 +790,15 @@ function endGame(onTime) {
   const b = S.breakdown;
   const fav = Object.entries(S.done.reduce((a, e) => (a[e.id] = (a[e.id] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1]).slice(0, 3)
     .map(([id]) => places.flatMap(p => p.acts).find(a => a.id === id)?.name).filter(Boolean);
+  const cats = tr('cats');
   openModal(`<div class="end">
-    <p class="muted">${onTime ? 'Checked out on time (+30)' : 'Sunday 17:00 — the weekend is over'}</p>
+    <p class="muted">${onTime ? tr('onTime') : tr('timeUp')}</p>
     <h2 class="rank">${rank[1]}</h2><p>${rank[2]}</p>
     <div class="big">✨ ${S.score}</div>
-    ${best && S.score <= best ? `<p class="muted">Your best: ${best}</p>` : (best ? '<p class="muted">New personal best!</p>' : '')}
-    <table class="bd">
-      <tr><td>🍽️ Meals</td><td>${b.meals}</td></tr>
-      <tr><td>🎾 Activities</td><td>${b.activities}</td></tr>
-      <tr><td>🌙 Sleep</td><td>${b.sleep}</td></tr>
-      <tr><td>🧸 Toys</td><td>${b.toys}</td></tr>
-      <tr><td>🏅 Badges</td><td>${b.badges}</td></tr>
-    </table>
-    <p class="muted">${S.distinct()} different activities · ${S.badges.size}/${badges.length} badges${fav.length ? ' · favourites: ' + fav.join(', ') : ''}</p>
-    <button class="primary" id="again">Another weekend</button></div>`);
+    ${best && S.score <= best ? `<p class="muted">${tr('best', { n: best })}</p>` : (best ? `<p class="muted">${tr('newBest')}</p>` : '')}
+    <table class="bd">${Object.keys(cats).map(k => `<tr><td>${cats[k]}</td><td>${b[k]}</td></tr>`).join('')}</table>
+    <p class="muted">${tr('endSub', { n: S.distinct(), b: S.badges.size, total: badges.length })}${fav.length ? tr('favs', { list: fav.join(', ') }) : ''}</p>
+    <button class="primary" id="again">${tr('again')}</button></div>`);
   $('modal-close').hidden = true;
   $('again').onclick = restart;
 }
@@ -794,15 +807,15 @@ function restart() {
   S = newState(); S.started = true;
   spawnGuests();
   $('modal').hidden = true; $('modal-close').hidden = false;
-  toast('🚗 Friday 18:00 — you pull into the parking. Dinner at La Table from 19:30!', 'info');
+  toast(tr('arrive'), 'info');
   renderPanel();
 }
 
 $('start').onclick = () => {
   $('intro').hidden = true;
   S.started = true;
-  toast('🚗 Friday 18:00 — you pull into the parking. Dinner at La Table from 19:30!', 'info');
-  setTimeout(() => toast('👆 Tap anywhere to walk. Tap a building to go inside.', 'info'), 1500);
+  toast(tr('arrive'), 'info');
+  setTimeout(() => toast(tr('tapHint'), 'info'), 1500);
 };
 
 // ================================================================ loop
@@ -816,8 +829,12 @@ function frame(now) {
 }
 // Snap the camera on the first frame
 { const [px, py] = iso(S.x, S.y); camX = px - vw / 2; camY = py - vh / 2; }
+setLang(lang);
+document.querySelectorAll('.langpick').forEach(el => { el.innerHTML = langButtons(); wireLang(el, () => {}); });
+
 // Debug/test hooks: ?autostart&t=<minutes since Fri 00:00>&x=&y=&zoom=
 const Q = new URLSearchParams(location.search);
+if (Q.has('lang')) applyLang(Q.get('lang'));
 if (Q.has('autostart')) {
   $('intro').hidden = true; S.started = true;
   if (Q.has('t')) S.t = Number(Q.get('t'));

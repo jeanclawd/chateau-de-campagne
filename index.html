@@ -27,14 +27,15 @@
     <div class="week"><div id="weekbar"></div></div>
   </div>
   <div class="card stats">
-    <div class="stat" title="Energy"><span>⚡</span><div class="bar"><div id="energy"></div></div></div>
-    <div class="stat" title="Satiety — eat when it's low for bonus points"><span>🍽️</span><div class="bar sat"><div id="sat"></div></div></div>
+    <div class="stat" data-i18n-title="t.energy" title="Energy"><span>⚡</span><div class="bar"><div id="energy"></div></div></div>
+    <div class="stat" data-i18n-title="t.sat" title="Satiety"><span>🍽️</span><div class="bar sat"><div id="sat"></div></div></div>
   </div>
   <div class="card scorecard"><span>✨</span> <b id="score">0</b> <span id="items"></span></div>
   <div class="btns">
-    <button id="ff" class="card" title="Fast-forward time (F)">⏩</button>
-    <button id="book" class="card" title="Weekend notebook">📖</button>
-    <button id="help" class="card" title="How to play">?</button>
+    <button id="ff" class="card" data-i18n-title="t.ff" title="Fast-forward time (F)">⏩</button>
+    <button id="book" class="card" data-i18n-title="t.book" title="Weekend notebook">📖</button>
+    <button id="help" class="card" data-i18n-title="t.help" title="How to play">?</button>
+    <button id="settings" class="card" data-i18n-title="t.settings" title="Settings">⚙️</button>
   </div>
 </div>
 <div class="zoom"><button id="zin" class="card">+</button><button id="zout" class="card">−</button></div>
@@ -60,7 +61,7 @@
 
 <div id="modal" hidden>
   <div class="modalbox">
-    <button id="modal-close" aria-label="Close">×</button>
+    <button id="modal-close" data-i18n-title="t.close" aria-label="Close">×</button>
     <div id="modal-body"></div>
   </div>
 </div>
@@ -69,11 +70,12 @@
   <div class="introbox">
     <div class="castle">🏰</div>
     <h1>Château de<br>Campagne</h1>
-    <p class="tag">A weekend in the French countryside, 45 minutes from Paris.</p>
-    <p>Moats, a 1642 château, a farm-to-table restaurant, a spa, tennis, rowboats and a campfire. You have <b>Friday evening to Sunday 17:00</b>.</p>
-    <p><b>Eat well, sleep well, do everything.</b> Every meal and activity earns ✨ — but watch your ⚡ energy and 🍽️ appetite.</p>
-    <button id="start" class="primary">Start the weekend →</button>
-    <p class="muted small">Tap to walk · tap a building to go in · arrows/WASD · F fast-forward</p>
+    <p class="tag" data-i18n="h.tag">A weekend in the French countryside, 45 minutes from Paris.</p>
+    <p data-i18n="h.p1">Moats, a 1642 château, a farm-to-table restaurant, a spa, tennis, rowboats and a campfire. You have <b>Friday evening to Sunday 17:00</b>.</p>
+    <p data-i18n="h.p2"><b>Eat well, sleep well, do everything.</b> Every meal and activity earns ✨ — but watch your ⚡ energy and 🍽️ appetite.</p>
+    <button id="start" class="primary" data-i18n="h.start">Start the weekend →</button>
+    <div class="langrow langpick"></div>
+    <p class="muted small" data-i18n="h.hint">Tap to walk · tap a building to go in · arrows/WASD · F fast-forward</p>
   </div>
 </div>
 

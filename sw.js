@@ -1,10 +1,10 @@
 // Offline support: precache the app shell, then serve cache-first while
 // refreshing in the background (stale-while-revalidate). Bump VERSION to
 // force clients onto a new release.
-const VERSION = 'cdc-v1';
+const VERSION = 'cdc-v2';
 const SHELL = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
-  'js/game.js', 'js/world.js', 'js/data.js', 'js/pix.js',
+  'js/game.js', 'js/i18n.js', 'js/world.js', 'js/data.js', 'js/pix.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
 ];
 
