@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Château de Campagne</title>
+<meta name="description" content="An isometric pixel-art weekend at a French country château. Eat well, do everything, score points.">
+<meta name="theme-color" content="#2a2118">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Silkscreen&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="card clockcard">
+    <div class="clockline"><span id="day">Fri</span> <span id="time">18:00</span></div>
+    <div class="week"><div id="weekbar"></div></div>
+  </div>
+  <div class="card stats">
+    <div class="stat" title="Energy"><span>⚡</span><div class="bar"><div id="energy"></div></div></div>
+    <div class="stat" title="Satiety — eat when it's low for bonus points"><span>🍽️</span><div class="bar sat"><div id="sat"></div></div></div>
+  </div>
+  <div class="card scorecard"><span>✨</span> <b id="score">0</b> <span id="items"></span></div>
+  <div class="btns">
+    <button id="ff" class="card" title="Fast-forward time (F)">⏩</button>
+    <button id="book" class="card" title="Weekend notebook">📖</button>
+    <button id="help" class="card" title="How to play">?</button>
+  </div>
+</div>
+<div class="zoom"><button id="zin" class="card">+</button><button id="zout" class="card">−</button></div>
+
+<div id="toasts"></div>
+
+<div id="panel" class="sheet" hidden>
+  <h3 id="p-title"></h3>
+  <p id="p-blurb"></p>
+  <div id="p-acts"></div>
+</div>
+
+<div id="busy" hidden>
+  <div class="busybox">
+    <div id="b-icon"></div>
+    <h3 id="b-title"></h3>
+    <p id="b-say"></p>
+    <div class="bbar"><div id="b-bar"></div></div>
+    <div id="b-clock"></div>
+    <button id="b-ok" class="primary" hidden>OK</button>
+  </div>
+</div>
+
+<div id="modal" hidden>
+  <div class="modalbox">
+    <button id="modal-close" aria-label="Close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="intro">
+  <div class="introbox">
+    <div class="castle">🏰</div>
+    <h1>Château de<br>Campagne</h1>
+    <p class="tag">A weekend in the French countryside, 45 minutes from Paris.</p>
+    <p>Moats, a 1642 château, a farm-to-table restaurant, a spa, tennis, rowboats and a campfire. You have <b>Friday evening to Sunday 17:00</b>.</p>
+    <p><b>Eat well, sleep well, do everything.</b> Every meal and activity earns ✨ — but watch your ⚡ energy and 🍽️ appetite.</p>
+    <button id="start" class="primary">Start the weekend →</button>
+    <p class="muted small">Tap to walk · tap a building to go in · arrows/WASD · F fast-forward</p>
+  </div>
+</div>
+
+<script type="module" src="js/game.js"></script>
+</body>
+</html>

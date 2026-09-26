@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><title>sim</title>
+<iframe id="f" src="../index.html?autostart" width="390" height="844"></iframe>
+<pre id="out">running</pre>
+<script>
+// Scripted playthrough: teleports to each place and does activities in order,
+// letting the busy overlay run in real (virtual) time. Output lands in #out.
+const plan = [
+  ['ferme','dinner'], ['grange','arty'], ['room','sleep'],
+  ['trail','run'], ['ferme','breakfast'], ['yoga','yoga'], ['yoga','reveil'], ['remise','racket'], ['tennis','tennis'],
+  ['ferme','basket'], ['picnic','picnic'], ['room','nap'], ['cottage','workshop'], ['ferme','goûter'], ['spa','swim'],
+  ['dock','row'], ['ducks','ducks'], ['ferme','dinner'], ['fire','campfire'], ['grange','cinema'], ['room','sleep'],
+  ['ferme','breakfast'], ['yoga','yoga'], ['remise','clubs'], ['golf','golf'], ['ferme','lunch'], ['library','read'], ['parking','leave'],
+];
+const log = [];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+document.getElementById('f').onload = async () => {
+  const w = document.getElementById('f').contentWindow;
+  const errs = []; w.addEventListener('error', e => errs.push(e.message));
+  await sleep(500);
+  const G = w.__game;
+  document.getElementById('out').textContent = 'G=' + !!G;
+  for (const [pid, aid] of plan) {
+    const pl = G.places.find(p => p.id === pid), act = pl.acts.find(a => a.id === aid);
+    // wait (fast) until it opens
+    let guard = 0;
+    G.S.x = pl.door[0] + .5; G.S.y = pl.door[1] + .5;
+    while (!act.when.some(x => G.S.t >= x.from && G.S.t < x.to) && guard++ < 400) { G.S.t += 10; await sleep(5); }
+    const before = G.S.score;
+    G.doActivity(pl, act);
+    await sleep(50);
+    if (G.S.busy) G.finishBusy();
+    log.push(`${w.document.getElementById('day').textContent} ${w.document.getElementById('time').textContent}  ${aid.padEnd(12)} +${G.S.score - before}  ⚡${G.S.energy.toFixed(0)} 🍽${G.S.sat.toFixed(0)}`);
+    document.getElementById('out').textContent = log.join('\n');
+    if (G.S.over) break;
+  }
+  log.push('score ' + G.S.score + ' badges ' + [...G.S.badges].join(',') + ' over=' + G.S.over);
+  log.push('breakdown ' + JSON.stringify(G.S.breakdown));
+  log.push('errors ' + JSON.stringify(errs));
+  document.getElementById('out').textContent = log.join('\n');
+};
+</script>
