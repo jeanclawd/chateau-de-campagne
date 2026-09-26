@@ -81,7 +81,16 @@
 
 <script type="module" src="js/game.js"></script>
 <script>
-  if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  if ('serviceWorker' in navigator) {
+    // When an update takes over from an older worker, reload once so the page
+    // never runs with a mix of old and new files.
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController && !reloaded) { reloaded = true; location.reload(); }
+    });
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
 </script>
 </body>
 </html>

@@ -278,7 +278,7 @@ const EN = {
 
 function detect() {
   try { const s = localStorage.getItem('cdc-lang'); if (s && UI[s]) return s; } catch (e) {}
-  return (navigator.language || 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
+  return 'fr';                       // French by default; English via ⚙️ Settings
 }
 
 export let lang = detect();

@@ -33,7 +33,7 @@ python3 -m http.server 8000
 - **🧸 Gustave lost 8 toys** around the park.
 - **🏅 Badges** reward combos (full spa circuit, three meals on Saturday, all-rounder…). The 📖 notebook lists them all, along with what's on and when.
 - **⏩** fast-forwards time (F key). `+`/`−` zoom.
-- **🇬🇧 / 🇫🇷** The game is in English and French. It follows your device language, and you can switch in **⚙️ Settings** or on the title screen.
+- **🇬🇧 / 🇫🇷** The game is in English and French. It starts in French, and you can switch in **⚙️ Settings** or on the title screen.
 
 At check-out you get a rank, from *Stressed Parisian* up to *Châtelain·e*.
 
@@ -47,7 +47,8 @@ At check-out you get a rank, from *Stressed Parisian* up to *Châtelain·e*.
 - Depth sorting uses footprint boxes plus a topological sort. That's what lets
   you walk behind a long wing of the château and be drawn correctly.
 - It's a PWA: a web manifest, pixel-art icons, and a service worker (`sw.js`) that
-  precaches the game so it plays offline. Bump `VERSION` in `sw.js` when you release.
+  precaches the game so it plays offline. It fetches from the network first and only
+  uses the cache as an offline fallback.
 - A day/night cycle multiplies a tint over the scene. At night the windows light up
   from a glow mask that is generated along with each building.
 - `js/i18n.js` holds the UI strings and French overlays for all the content. They're applied

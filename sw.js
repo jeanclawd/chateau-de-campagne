@@ -1,7 +1,7 @@
-// Offline support: precache the app shell, then serve cache-first while
-// refreshing in the background (stale-while-revalidate). Bump VERSION to
-// force clients onto a new release.
-const VERSION = 'cdc-v2';
+// Offline support: precache the app shell, then go network-first so every
+// load gets one consistent release (cache-first mixed an old game.js with a
+// new index.html after an update). The cache is only a fallback for offline.
+const VERSION = 'cdc-v3';
 const SHELL = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
   'js/game.js', 'js/i18n.js', 'js/world.js', 'js/data.js', 'js/pix.js',
@@ -24,12 +24,11 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   const cacheable = url.origin === location.origin || /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
   if (!cacheable) return;
-  e.respondWith(caches.open(VERSION).then(async cache => {
-    const hit = await cache.match(req, { ignoreSearch: url.origin === location.origin });
-    const net = fetch(req).then(res => {
+  e.respondWith(caches.open(VERSION).then(cache =>
+    // navigations can't be re-initialised; everything else revalidates with the server
+    fetch(req.mode === 'navigate' ? req : new Request(req, { cache: 'no-cache' })).then(res => {
       if (res.ok || res.type === 'opaque') cache.put(req, res.clone());
       return res;
-    }).catch(() => hit);
-    return hit || net;
-  }));
+    }).catch(() => cache.match(req, { ignoreSearch: url.origin === location.origin }))
+  ));
 });
