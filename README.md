@@ -7,9 +7,17 @@ The map is loosely based on the estate at **Villiers-le-Mahieu** (Yvelines):
 a 1642 château on its moated island, the farm buildings of La Ferme, La Grange,
 the Cottage, a pond, tennis courts, an outdoor pool and a tree-lined avenue.
 
+**▶ Play it: https://jeanclawd.github.io/chateau-de-campagne/** (installable as an app, works offline)
+
+![The estate: moated château, La Ferme, La Grange, the pond, tennis courts and pool](docs/overview.png)
+
+![Night falls on the château and the windows light up](docs/night.png)
+
 ## Play
 
-It's a static site with no build step and no dependencies:
+Open the link above. On a phone, use **Add to Home Screen** to install it as a
+full-screen app (PWA) that also works offline. To run it locally: it's a static
+site with no build step and no dependencies:
 
 ```bash
 python3 -m http.server 8000
@@ -37,6 +45,8 @@ At check-out you get a rank, from *Stressed Parisian* up to *Châtelain·e*.
 - The world is drawn to a low-res buffer and scaled up by an integer factor.
 - Depth sorting uses footprint boxes plus a topological sort. That's what lets
   you walk behind a long wing of the château and be drawn correctly.
+- It's a PWA: a web manifest, pixel-art icons, and a service worker (`sw.js`) that
+  precaches the game so it plays offline. Bump `VERSION` in `sw.js` when you release.
 - A day/night cycle multiplies a tint over the scene. At night the windows light up
   from a glow mask that is generated along with each building.
 - `js/data.js` holds every place, opening hour, activity, badge and rank. Tweak the
